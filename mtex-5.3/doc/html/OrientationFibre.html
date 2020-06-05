@@ -1,0 +1,124 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <title>Fibres of Orientations ( Toolbox)
+         
+      </title>
+      <!-- DOCNAME:  Toolbox -->
+      <meta name="chunktype" content="refpage">
+      <!-- CHUNKNAME: OrientationFibre -->
+      <!-- HEADSTUFF: OrientationFibre -->
+      <!-- HEADSTUFF -->
+      <meta name="refentity" content="method:OrientationFibre">
+      <meta http-equiv="Content-Script-Type" content="text/javascript">
+      <meta name="toctype" content="fcn">
+      <link rel="stylesheet" href="style.css"><script language="JavaScript" src="docscripts.js"></script></head>
+   <body><a name="top_of_page"></a><div>
+         <table class="nav" summary="Navigation aid" border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+               <td valign="baseline"></td>
+            </tr>
+         </table>
+         <p style="font-size:1px;"></p>
+      </div>
+      <div class="content">
+         <h1 class="refname">Fibres of Orientations</h1>
+         <div class="subheading"></div>
+         <p>A fibre in orientation space is essentially a line connecting two orientations and can be represented in MTEX by a single
+            variable of type <a href="fibre.fibre.html">fibre</a>. To illustrate the definition of a fibre we first define <b>cube</b> and <b>goss</b> orientation
+         </p><pre class="codeinput"><span class="comment">% define crystal and specimen symmetry</span>
+cs = crystalSymmetry(<span class="string">'432'</span>);
+ss = specimenSymmetry(<span class="string">'1'</span>);
+
+<span class="comment">% and two orientations</span>
+ori1 = orientation.cube(cs,ss);
+ori2 = orientation.goss(cs,ss);</pre><p>and then the fibre connecting both orientations</p><pre class="codeinput">f = fibre(ori1,ori2)</pre><pre class="codeoutput"> 
+f = fibre  
+ size: 1 x 1
+ crystal symmetry:  432
+ o1: (0&deg;,0&deg;,0&deg;)
+ o2: (0&deg;,45&deg;,0&deg;)
+</pre><p>Finally we plot everything into the Euler space</p><pre class="codeinput"><span class="comment">% plot the fibre</span>
+plot(f,<span class="string">'DisplayName'</span>,<span class="string">'Fibre'</span>,<span class="string">'linewidth'</span>,4,<span class="string">'linecolor'</span>,<span class="string">'green'</span>)
+
+<span class="comment">% and on top of it the orientations</span>
+hold <span class="string">on</span>
+plot(ori1,<span class="string">'DisplayName'</span>,<span class="string">'CUBE'</span>,<span class="string">'MarkerSize'</span>,12,<span class="string">'MarkerFaceColor'</span>,<span class="string">'darkred'</span>,<span class="string">'MarkerEdgeColor'</span>,<span class="string">'k'</span>)
+plot(ori2,<span class="string">'DisplayName'</span>,<span class="string">'GOSS'</span>,<span class="string">'MarkerSize'</span>,12,<span class="string">'MarkerFaceColor'</span>,<span class="string">'blue'</span>,<span class="string">'MarkerEdgeColor'</span>,<span class="string">'k'</span>)
+hold <span class="string">off</span>
+legend</pre><img src="OrientationFibre_01.png"> <p>Alternatively, we may visualize the fibre also in axis angle space</p><pre class="codeinput"><span class="comment">% plot the fibre</span>
+plot(f,<span class="string">'linecolor'</span>,<span class="string">'green'</span>,<span class="string">'linewidth'</span>,6,<span class="string">'axisAngle'</span>)
+
+<span class="comment">% and on top of it the orientations</span>
+hold <span class="string">on</span>
+plot(ori1,<span class="string">'MarkerFaceColor'</span>,<span class="string">'darkred'</span>,<span class="string">'MarkerSize'</span>,15,<span class="string">'axisAngle'</span>)
+plot(ori2,<span class="string">'MarkerFaceColor'</span>,<span class="string">'blue'</span>,<span class="string">'MarkerSize'</span>,15)
+hold <span class="string">off</span></pre><img src="OrientationFibre_02.png"> <p>Obviously, <b>f</b> is not a full fibre. Since, the orientation space has no boundary a full fibre is best thought of as a circle that passes
+            trough two fixed orientations. In order to define the full fibre us the option <b>full</b></p><pre class="codeinput">f = fibre(ori1,ori2,<span class="string">'full'</span>)
+
+hold <span class="string">on</span>
+plot(f,<span class="string">'linecolor'</span>,<span class="string">'gold'</span>,<span class="string">'linewidth'</span>,3,<span class="string">'project2FundamentalRegion'</span>)
+hold <span class="string">off</span></pre><pre class="codeoutput"> 
+f = fibre  
+ size: 1 x 1
+ crystal symmetry:  432
+ o1: (0&deg;,0&deg;,0&deg;)
+ h: (100)
+</pre><img src="OrientationFibre_03.png"> <h2>Defining a fibre by directions<a name="6"> </a></h2>
+         <p>Alternatively, a fibre can also be defined by a pair of a crystal and a specimen direction. In this case it consists of all
+            orientations that alignes the crystal direction parallel to the specimen direction. As an example we define the fibre of all
+            orientations such that the c-axis (001) is parallel to the z-axis by
+         </p><pre class="codeinput">f = fibre(Miller(0,0,1,cs),vector3d.Z)
+
+plot(f,<span class="string">'linecolor'</span>,<span class="string">'gold'</span>,<span class="string">'linewidth'</span>,4,<span class="string">'project2FundamentalRegion'</span>,<span class="string">'axisAngle'</span>)</pre><pre class="codeoutput"> 
+f = fibre  
+ size: 1 x 1
+ crystal symmetry:  432
+ o1: (0&deg;,0&deg;,0&deg;)
+ h: (001)
+</pre><img src="OrientationFibre_04.png"> <p>If both directions of type Miller the fibre corresponds to all misorientations which have these two direcetion parallel.</p>
+         <p>Finally, a fibre can be defined by an initial orientation <b>ori1</b> and a direction <b>h</b>, i.e., all orientations of this fibre satisfy
+         </p><pre class="codeinput">ori = ori1 * rot(h,omega)</pre><p>and</p><pre class="codeinput">ori * h = ori1 * h</pre><p>The following code defines a fibre that passes through the cube orientation and rotates about the (111) axis.</p><pre class="codeinput">f = fibre(ori1,Miller(1,1,1,cs))
+
+plot(f,<span class="string">'linecolor'</span>,<span class="string">'darkred'</span>,<span class="string">'linewidth'</span>,4,<span class="string">'project2FundamentalRegion'</span>,<span class="string">'axisAngle'</span>)</pre><pre class="codeoutput"> 
+f = fibre  
+ size: 1 x 1
+ crystal symmetry:  432
+ o1: (0&deg;,0&deg;,0&deg;)
+ h: (111)
+</pre><img src="OrientationFibre_05.png"> <h2>predefined fibres<a name="8"> </a></h2>
+         <p>MTEX includes also a list of predefined fibres, e.g., alpha-, beta-, gamma-, epsilon-, eta- and tau fibres. Those can be defined
+            by
+         </p><pre class="codeinput">beta = fibre.beta(cs,<span class="string">'full'</span>);</pre><p>Note, that it is now straight forward to define a corresponding fibre ODF by</p><pre class="codeinput">odf = fibreODF(beta,<span class="string">'halfwidth'</span>,10*degree)
+
+<span class="comment">% and plot it in 3d</span>
+plot3d(odf)
+
+<span class="comment">% this adds the fibre to the plots</span>
+hold <span class="string">on</span>
+plot(beta.symmetrise,<span class="string">'lineColor'</span>,<span class="string">'b'</span>,<span class="string">'linewidth'</span>,4)
+hold <span class="string">off</span></pre><pre class="codeoutput"> 
+odf = ODF  
+  crystal symmetry : 432
+  specimen symmetry: 1
+ 
+  Fibre symmetric portion:
+    kernel: de la Vallee Poussin, halfwidth 10&deg;
+    fibre: (---) - 0.23141,0.23141,0.94494
+    weight: 1
+ 
+</pre><img src="OrientationFibre_06.png"> <h2>Visualize an ODF along a fibre<a name="10"> </a></h2><pre class="codeinput">plot(odf,fibre.gamma(cs))</pre><img src="OrientationFibre_07.png"> <h2>Compute volume of fibre portions<a name="11"> </a></h2><pre class="codeinput">100 * volume(odf,beta,10*degree)</pre><pre class="codeoutput">ans =
+   54.3540
+</pre><p style="font-size:1px;"></p>
+         <table class="footer" border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+               <td valign="baseline" align="right"></td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

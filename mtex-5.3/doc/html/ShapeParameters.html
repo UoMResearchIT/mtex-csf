@@ -1,0 +1,415 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <title>Shape Parameters ( Toolbox)
+         
+      </title>
+      <!-- DOCNAME:  Toolbox -->
+      <meta name="chunktype" content="refpage">
+      <!-- CHUNKNAME: ShapeParameters -->
+      <!-- HEADSTUFF: ShapeParameters -->
+      <!-- HEADSTUFF -->
+      <meta name="refentity" content="method:ShapeParameters">
+      <meta http-equiv="Content-Script-Type" content="text/javascript">
+      <meta name="toctype" content="fcn">
+      <link rel="stylesheet" href="style.css"><script language="JavaScript" src="docscripts.js"></script></head>
+   <body><a name="top_of_page"></a><div>
+         <table class="nav" summary="Navigation aid" border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+               <td valign="baseline"></td>
+            </tr>
+         </table>
+         <p style="font-size:1px;"></p>
+      </div>
+      <div class="content">
+         <h1 class="refname">Shape Parameters</h1>
+         <div class="subheading"></div>
+         <p>In this section we discuss various geometric properties of grains. We start our discussion by reconstructing the grain structure
+            from a sample EBSD data set.
+         </p><pre class="codeinput"><span class="comment">% load sample EBSD data set</span>
+mtexdata <span class="string">forsterite</span>
+
+<span class="comment">% restrict it to a subregion of interest.</span>
+ebsd = ebsd(inpolygon(ebsd,[5 2 10 5]*10^3));
+
+<span class="comment">% remove all not indexed pixels</span>
+ebsd = ebsd(<span class="string">'indexed'</span>)
+
+<span class="comment">% reconstruct grains</span>
+[grains, ebsd.grainId] = calcGrains(ebsd,<span class="string">'angle'</span>,5*degree)
+
+<span class="comment">% smooth them</span>
+grains = smooth(grains,5);
+
+<span class="comment">% plot the orientation data of the Forsterite phase</span>
+plot(ebsd(<span class="string">'fo'</span>),ebsd(<span class="string">'fo'</span>).orientations)
+
+<span class="comment">% plot the grain boundary on top of it</span>
+hold <span class="string">on</span>
+plot(grains.boundary,<span class="string">'lineWidth'</span>,2)
+hold <span class="string">off</span></pre><pre class="codeoutput"> 
+ebsd = EBSD  
+ 
+ Phase  Orientations     Mineral         Color  Symmetry  Crystal reference frame
+     0   58485 (24%)  notIndexed                                                 
+     1  152345 (62%)  Forsterite  LightSkyBlue       mmm                         
+     2   26058 (11%)   Enstatite  DarkSeaGreen       mmm                         
+     3   9064 (3.7%)    Diopside     Goldenrod     12/m1       X||a*, Y||b*, Z||c
+ 
+ Properties: bands, bc, bs, error, mad, x, y
+ Scan unit : um
+ 
+ 
+ebsd = EBSD  
+ 
+ Phase  Orientations     Mineral         Color  Symmetry  Crystal reference frame
+     1   14093 (87%)  Forsterite  LightSkyBlue       mmm                         
+     2   1397 (8.6%)   Enstatite  DarkSeaGreen       mmm                         
+     3    759 (4.7%)    Diopside     Goldenrod     12/m1       X||a*, Y||b*, Z||c
+ 
+ Properties: bands, bc, bs, error, mad, x, y
+ Scan unit : um
+ 
+ 
+grains = grain2d  
+ 
+ Phase  Grains  Pixels     Mineral  Symmetry  Crystal reference frame
+     1     118   14093  Forsterite       mmm                         
+     2      32    1397   Enstatite       mmm                         
+     3      76     759    Diopside     12/m1       X||a*, Y||b*, Z||c
+ 
+ boundary segments: 3915
+ triple points: 284
+ 
+ Properties: GOS, meanRotation
+ 
+ 
+ebsd = EBSD  
+ 
+ Phase  Orientations     Mineral         Color  Symmetry  Crystal reference frame
+     1   14093 (87%)  Forsterite  LightSkyBlue       mmm                         
+     2   1397 (8.6%)   Enstatite  DarkSeaGreen       mmm                         
+     3    759 (4.7%)    Diopside     Goldenrod     12/m1       X||a*, Y||b*, Z||c
+ 
+ Properties: bands, bc, bs, error, mad, x, y, grainId
+ Scan unit : um
+ 
+</pre><img src="ShapeParameters_01.png"> <h2>Grain size, area, diameter, perimeter and calliper<a name="2"> </a></h2>
+         <p>Once grains have been reconstructed, several shape parameters can be computed. Those can be visualized either as histograms,
+            or used to colorize an grain map.
+         </p>
+         <p>The most basic properties are grainSize and grain area. Those can be computed by</p><pre class="codeinput">grains(9).grainSize
+grains(9).area</pre><pre class="codeoutput">ans =
+     1
+ans =
+  170.6081
+</pre><p>Hereby <b>grainSize</b> referes to the number of pixels the belong to a certain grain while <b>area</b> represents the actual area measured in (um)^2. Simarly the two one-dimensional meassures <b>boundarySize</b> and <b>perimeter</b> gives the length of the grain boundary in number of segments and in in um, respectively.
+         </p><pre class="codeinput">grains(9).boundarySize
+grains(9).perimeter</pre><pre class="codeoutput">ans =
+     4
+ans =
+   83.9653
+</pre><p>Another, one dimensional measure is the <b>diameter</b> which refers to the longest distance between any two boundary points and is given im um as well
+         </p><pre class="codeinput">grains(9).diameter</pre><pre class="codeoutput">ans =
+   40.5107
+</pre><p>The diameter is a special case of the caliper or Feret diameter of a grain. By definition the caliper is the length of a grain
+            when projected onto a line. Hence, the length of the longest projection is coincides with the diameter, while the quotient
+            between longest and shortest projection gives an indication about the shape of the grain
+         </p><pre class="codeinput">grains(9).calliper(<span class="string">'longest'</span>)
+grains(9).calliper(<span class="string">'shortest'</span>)</pre><pre class="codeoutput">ans =
+   40.5107
+ans =
+    6.3359
+</pre><p>Another way to investigate the perimeter is using the grain boundary. The first command returns simply the number of boundary
+            segments while the second one gives the total length of the boundary by summing up the length of each individual boundary
+            segment
+         </p><pre class="codeinput">length(grains(9).boundary)
+sum(grains(9).boundary.segLength)</pre><pre class="codeoutput">ans =
+     4
+ans =
+   83.9653
+</pre><h2>Fitted ellipses<a name="7"> </a></h2>
+         <p>Many shape parameters refers to ellipses fit to the grains</p><pre class="codeinput">[omega,a,b] = grains.fitEllipse;
+plot(grains,<span class="string">'linewidth'</span>,4)
+plotEllipse(grains.centroid,a,b,omega,<span class="string">'lineColor'</span>,<span class="string">'w'</span>,<span class="string">'linewidth'</span>,2)</pre><img src="ShapeParameters_02.png"> <p>in the above lines the midpoint of the ellipse is given by <a href="grain2d.centroid.html"><b>grains.centroid</b></a>. The variable <b>omega</b> is the angle describing the rotation of the ellipses and <b>a</b> and <b>b</b> are the length of the longest and shortest half axis of the ellipses, respectively. Note, that the ellipses are scalled such
+            that their areas coincide with the actual grain areas.
+         </p>
+         <p>The quotient a/b between the longest and the shortest axis is called aspect ration and can be computed via</p><pre class="codeinput">grains(9).aspectRatio</pre><pre class="codeoutput">ans =
+    6.5087
+</pre><p>The radius and perimeter of the fitted ellipse can be computed by</p><pre class="codeinput">grains(9).equivalentRadius
+grains(9).equivalentPerimeter</pre><pre class="codeoutput">ans =
+    7.3693
+ans =
+   46.3025
+</pre><p>Let have a look at the difference between perimeter of the ellipse and perimeter of the grain:</p><pre class="codeinput">plot(grains,(grains.perimeter - grains.equivalentPerimeter)./grains.perimeter)
+setColorRange([0,0.5])
+mtexColorbar</pre><img src="ShapeParameters_03.png"> <p>In this plot round shapes will have values close to zero while concave shapes will get large values. A similar measure is
+            the shape factor which is defined as the ratio between the grain perimeter and the equivalent perimeter
+         </p><pre class="codeinput">plot(grains,grains.shapeFactor)
+setColorRange([1,2])
+mtexColorbar(<span class="string">'title'</span>,<span class="string">'shape factor'</span>)</pre><img src="ShapeParameters_04.png"> <p>Another simular measures is the <a href="grain2d.paris.html">paris</a> which stands for Percentile Average Relative Indented Surface and gives the relative difference between the actual perimeter
+            and the perimeter of the convex hull.
+         </p><pre class="codeinput">plot(grains,grains.paris)
+mtexColorbar(<span class="string">'title'</span>,<span class="string">'paris'</span>)</pre><img src="ShapeParameters_05.png"> <p>A bit strange quantity</p><pre class="codeinput">plot(grains,log10(2.*grains.equivalentRadius))
+cb = mtexColorbar;
+labels = num2str(round(10.^(cb.Ticks))');
+cb.TickLabels=labels;
+drawNow(gcm)</pre><img src="ShapeParameters_06.png"> <h2>Histograms<a name="15"> </a></h2><pre class="codeinput">close <span class="string">all</span>
+histogram(grains.area)
+xlabel(<span class="string">'grain area'</span>)
+ylabel(<span class="string">'number of grains'</span>)</pre><img src="ShapeParameters_07.png"> <p>Note the large amount of very small grains. A more realistic histogram we obtain if we do not plot the number of grains at
+            the y-axis but its total area. This can be achieved with the command <a href="grain2d.hist.html">hist</a></p><pre class="codeinput">hist(grains,grains.area)
+xlabel(<span class="string">'grain area'</span>)</pre><img src="ShapeParameters_08.png"> <h2>Scatter plot<a name="17"> </a></h2>
+         <p>Scatter plots provide an efficient way to check whether two or more properties are correlated. As an example lets look at
+            the paris and the shape factor
+         </p><pre class="codeinput">close <span class="string">all</span>
+scatter(grains.paris,grains.shapeFactor)
+xlabel(<span class="string">'paris'</span>)
+ylabel(<span class="string">'shape factor'</span>)</pre><img src="ShapeParameters_09.png"> <p>Obviously, there is a strong correlation between those two quantities.</p>
+         <h2>List of all geometric grain properties<a name="19"> </a></h2>
+         <p>Grains are stored as a long list of several properties. Please find below a table of most of the properties that are stored
+            or can be computed for grains
+         </p>
+         <p>
+            <table class="usertable">
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.area.html">
+            <b>grains.area</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>grain area in square <tt>grains.scanUnit</tt>
+            </p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.aspectRatio.html">
+            <b>grains.aspectRatio</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>grain length / grain width</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grainBoundary.grainBoundary.html">
+            <b>grains.boundary</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>list of boundary segments</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grainBoundary.grainBoundary.html">
+            <b>grains.innerBoundary</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>list of inner boundary segments</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.boundarySize.html">
+            <b>grains.boundarySize</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>number of boundary segments</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.paris.html">
+            <b>grains.paris</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>area difference between grain and its convex hull</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.centroid.html">
+            <b>grains.centroid</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>x,y coordinates of the barycenter of the grain</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.diameter.html">
+            <b>grains.diameter</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>diameter in <tt>grains.scanUnit</tt>
+            </p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.equivalentPerimeter.html">
+            <b>grains.equivalentPerimeter</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>the perimeter of the fitted ellipse</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.equivalentRadius.html">
+            <b>grains.equivalentRadius</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>the radius of the fitted ellipse</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <b>grains.grainSize</b>
+            </p>
+            </td>
+            <td>
+            <p>number of measurements per grain</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.hasHole.html">
+            <b>grains.hasHole</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>check for inclusions</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.neighbors.html">
+            <b>grains.neighbors</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>number and ids of neighboring grains</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.perimeter.html">
+            <b>grains.perimeter</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>perimeter in <tt>grains.scanUnit</tt>
+            </p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.principalComponents.html">
+            <b>grains.principalComponents</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>length and width of the fitted ellipse</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="grain2d.shapeFactor.html">
+            <b>grains.shapeFactor</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>quotient perimeter / perimeter of the fitted ellipse</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <a href="triplePointList.triplePointList.html">
+            <b>grains.triplePoints</b>
+            </a>
+            </p>
+            </td>
+            <td>
+            <p>list of  triple points</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <b>grains.x</b>
+            </p>
+            </td>
+            <td>
+            <p>x coordinates of the vertices</p>
+            </td>
+            </tr>
+            <tr>
+            <td>
+            <p>
+            <b>grains.y</b>
+            </p>
+            </td>
+            <td>
+            <p>y coordinates of the vertices</p>
+            </td>
+            </tr>
+            </table>
+            
+         </p>
+         <p style="font-size:1px;"></p>
+         <table class="footer" border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+               <td valign="baseline" align="right"></td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>

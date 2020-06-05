@@ -1,0 +1,193 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <title>Tilt and Twist Boundaries ( Toolbox)
+         
+      </title>
+      <!-- DOCNAME:  Toolbox -->
+      <meta name="chunktype" content="refpage">
+      <!-- CHUNKNAME: TiltAndTwistBoundaries -->
+      <!-- HEADSTUFF: TiltAndTwistBoundaries -->
+      <!-- HEADSTUFF -->
+      <meta name="refentity" content="method:TiltAndTwistBoundaries">
+      <meta http-equiv="Content-Script-Type" content="text/javascript">
+      <meta name="toctype" content="fcn">
+      <link rel="stylesheet" href="style.css"><script language="JavaScript" src="docscripts.js"></script></head>
+   <body><a name="top_of_page"></a><div>
+         <table class="nav" summary="Navigation aid" border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+               <td valign="baseline"></td>
+            </tr>
+         </table>
+         <p style="font-size:1px;"></p>
+      </div>
+      <div class="content">
+         <h1 class="refname">Tilt and Twist Boundaries</h1>
+         <div class="subheading"></div>
+         <h2>Theory<a name="1"> </a></h2>
+         <p>If a material deforms through the movement of dislocations, re- arrangement of dislocationsto a low-energy configuration may
+            happen during deformation (i.e. in slow, geologic deformation) or or afterwards (in many metals). In any case, the arrangement
+            of dislocation walls can lead to so-called subgrains boundaries. If such a boundary is composed of edge dislocations, it is
+            called a tilt boundary and the rotation axis relating both parts of the grain at each side can be expected to be within the
+            boudnary plane (ideally parallel to the edge dislocation line). If the boundary is composed of screw dislocations, the rotation
+            axis should be normal to the boundary. Between those end-members, there are general boundaries where the rotation axis is
+            not easily related to the type of dislocations unless further information is available.
+         </p>
+         <h2>Data import and grain detection<a name="2"> </a></h2>
+         <p>Lets start by loading an MTEX standard data set, reconstuct grains and grain boundaries</p><pre class="codeinput"><span class="comment">% import data</span>
+mtexdata <span class="string">forsterite</span>
+
+<span class="comment">% reconstruct grains</span>
+[grains, ebsd.grainId] = calcGrains(ebsd);
+ebsd = ebsd(grains(grains.grainSize&gt;10));
+[grains, ebsd.grainId, ebsd.mis2mean] = calcGrains(ebsd);
+
+<span class="comment">% smooth grain boundaries to avoid stair casing effect</span>
+grains = smooth(grains,5);
+
+<span class="comment">% consider only the very big grains</span>
+grains = grains(grains.grainSize&gt;300,<span class="string">'fo'</span>)</pre><pre class="codeoutput"> 
+ebsd = EBSD  
+ 
+ Phase  Orientations     Mineral         Color  Symmetry  Crystal reference frame
+     0   58485 (24%)  notIndexed                                                 
+     1  152345 (62%)  Forsterite  LightSkyBlue       mmm                         
+     2   26058 (11%)   Enstatite  DarkSeaGreen       mmm                         
+     3   9064 (3.7%)    Diopside     Goldenrod     12/m1       X||a*, Y||b*, Z||c
+ 
+ Properties: bands, bc, bs, error, mad, x, y
+ Scan unit : um
+ 
+ 
+grains = grain2d  
+ 
+ Phase  Grains  Pixels     Mineral  Symmetry  Crystal reference frame
+     1     126  115173  Forsterite       mmm                         
+ 
+ boundary segments: 26459
+ triple points: 1312
+ 
+ Properties: GOS, meanRotation
+ 
+</pre><p>Colorize the orientations according to their misorientation axis / angle with respect to the grains mean orientation</p><pre class="codeinput"><span class="comment">% sett the color key</span>
+colorKey = axisAngleColorKey(ebsd(<span class="string">'f'</span>).CS);
+
+<span class="comment">% set reference orientation to be the grain mean orientation</span>
+colorKey.oriRef = grains{ebsd(grains).grainId}.meanOrientation;
+
+<span class="comment">% plot orientations according to this color key</span>
+plot(ebsd(grains),colorKey.orientation2color(ebsd(grains).orientations),<span class="string">'micronbar'</span>,<span class="string">'off'</span>)
+
+<span class="comment">% plot grain boundaries</span>
+hold <span class="string">on</span>
+plot(grains(<span class="string">'f'</span>).boundary,<span class="string">'lineWidth'</span>,2)
+
+<span class="comment">% plot grain index</span>
+text(grains(<span class="string">'f'</span>),arrayfun(@num2str,1:length(grains),<span class="string">'uniformOutput'</span>,false),<span class="string">'FontSize'</span>,18)
+
+
+<span class="comment">% mark one specific grain</span>
+ind = 73;
+plot(grains(ind).boundary,<span class="string">'lineColor'</span>,<span class="string">'red'</span>,<span class="string">'lineWidth'</span>,3)
+hold <span class="string">off</span></pre><pre class="codeoutput">Warning: Symmetry missmatch! 
+</pre><img src="TiltAndTwistBoundaries_01.png"> <p>Lets restrict ourself to one specific grain and investigate its microtexture in more detail.</p><pre class="codeinput"><span class="comment">% restrict the</span>
+ebsd = ebsd(grains(ind));
+
+<span class="comment">% and denoise a little and fill</span>
+F = halfQuadraticFilter;
+F.alpha = 1;
+F.threshold  = 1.5*degree;
+
+ebsdS = smooth(ebsd,F,<span class="string">'fill'</span>,grains(ind));
+ebsdS = ebsdS(<span class="string">'indexed'</span>);</pre><pre class="codeinput">colorKey.oriRef = mean(ebsd.orientations);
+plot(ebsdS,colorKey.orientation2color(ebsdS.orientations),<span class="string">'micronbar'</span>,<span class="string">'off'</span>)
+
+<span class="comment">% plot grain boundaries</span>
+hold <span class="string">on</span>
+plot(grains(ind).boundary,<span class="string">'lineWidth'</span>,2)
+hold <span class="string">off</span></pre><pre class="codeoutput">Warning: Symmetry missmatch! 
+</pre><img src="TiltAndTwistBoundaries_02.png"> <h2>Low angle subgrain boundaries<a name="6"> </a></h2>
+         <p>Since we want to investiage the microtexture of the low angle boundaries, let's segment at a small angle</p><pre class="codeinput">[subGrains, ebsdS.grainId,ebsdS.mis2mean] = calcGrains(ebsdS,<span class="string">'angle'</span>,1.25*degree,<span class="string">'boundary'</span>,<span class="string">'tight'</span>);
+
+subGrains = smooth(subGrains,5);
+
+<span class="comment">% gather all subgrain boundaries</span>
+gbfo = [subGrains.boundary(<span class="string">'f'</span>,<span class="string">'f'</span>) subGrains.innerBoundary(<span class="string">'f'</span>,<span class="string">'f'</span>)];
+
+<span class="comment">% colorize orientation according to their misorientation to the meanorientation</span>
+plot(ebsdS,colorKey.orientation2color(ebsdS.orientations),<span class="string">'micronbar'</span>,<span class="string">'off'</span>)
+hold <span class="string">on</span>
+
+<span class="comment">% colorize subgrain boundaries according to their misorientation angle</span>
+plot(gbfo,gbfo.misorientation.angle./degree,<span class="string">'lineWidth'</span>,3)
+plot(subGrains.boundary(<span class="string">'notIndexed'</span>),<span class="string">'lineWidth'</span>,2)
+hold <span class="string">off</span>
+mtexColorbar(<span class="string">'Title'</span>,<span class="string">'Misorientation angle [\circ]'</span>,<span class="string">'locacation'</span>,<span class="string">'southoutside'</span>)
+mtexColorMap <span class="string">blue2red</span></pre><pre class="codeoutput">Warning: Symmetry missmatch! 
+</pre><img src="TiltAndTwistBoundaries_03.png"> <h2>The misorientation axes in crystal coordinats<a name="7"> </a></h2>
+         <p>Our next goal is to investiage the misorientation axes at the subgrain boundaries. Lets start by plotting them with respect
+            to the crystal coordinate system while colorizing them according to the misorientation angle.
+         </p><pre class="codeinput">plot(gbfo.misorientation.axis,gbfo.misorientation.angle./degree,<span class="keyword">...</span>
+  <span class="string">'fundamentalRegion'</span>,<span class="string">'MarkerEdgeColor'</span>,<span class="string">'k'</span>)
+mtexColorMap <span class="string">white2black</span>
+mtexColorbar(<span class="string">'Title'</span>,<span class="string">'Misorientation angle [\circ]'</span>,<span class="string">'locacation'</span>,<span class="string">'southoutside'</span>)</pre><img src="TiltAndTwistBoundaries_04.png"> <p>We observe that the misorientation axes have a strong tendency to be perpendicular to [100].</p>
+         <h2>The misorientation axis in specimen coordinats<a name="9"> </a></h2>
+         <p>The computation of the misorientation axis in specimen coordinates is a little bit more complicated as it is impossible using
+            only the misorientions. In fact we require the adjecent orientations on both sides of the subgrain boundaries. We can find
+            those by the command
+         </p><pre class="codeinput">ori_boundary = ebsdS(<span class="string">'id'</span>,gbfo.ebsdId).orientations</pre><pre class="codeoutput"> 
+ori_boundary = orientation  
+  size: 322 x 2
+  crystal symmetry : Forsterite (mmm)
+  specimen symmetry: 1
+ 
+</pre><p>which results in a Nx2 matrix of orientations with rows corresponding to the boundary segments and the two columns to the
+            both sides of the boundary. The misorientation axis in specimen coordinates is now computed by
+         </p><pre class="codeinput">axS = axis(ori_boundary(:,1),ori_boundary(:,2),<span class="string">'antipodal'</span>)</pre><pre class="codeoutput"> 
+axS = vector3d  
+ size: 322 x 1
+ antipodal: true
+</pre><p>and we may visualize them in a spherical plot using</p><pre class="codeinput">plot(axS,gbfo.misorientation.angle./degree,<span class="string">'upper'</span>,<span class="string">'MarkerEdgeColor'</span>,<span class="string">'k'</span>,<span class="string">'MarkerSize'</span>,10)
+mtexColorMap <span class="string">white2black</span>
+mtexColorbar(<span class="string">'Title'</span>,<span class="string">'Misorientation angle [\circ]'</span>,<span class="string">'locacation'</span>,<span class="string">'southoutside'</span>)</pre><img src="TiltAndTwistBoundaries_05.png"> <h2>Colorize low angle boundaries by misorientation axes<a name="12"> </a></h2><pre class="codeinput"><span class="comment">% First, we plot some crystal directions of the grain in a pole figure</span>
+<span class="comment">% so we understand the orientation of the grain a little better</span>
+close <span class="string">all</span>
+h = Miller({1,0,0},{0,1,0},{0,0,1},ebsd.CS);
+ori = ebsdS.orientations;
+plotPDF(ori,colorKey.orientation2color(ori),h,<span class="string">'MarkerSize'</span>,5)</pre><pre class="codeoutput">Warning: Symmetry missmatch! 
+  I'm plotting 1250 random orientations out of 3153 given orientations
+  You can specify the the number points by the option "points".
+  The option "all" ensures that all data are plotted
+</pre><img src="TiltAndTwistBoundaries_06.png"> <p>now we plot the grain with subboundaries color coded with the direction mapping according to the misorientation axes in crystal
+            coordinates
+         </p><pre class="codeinput">plot(ebsdS,colorKey.orientation2color(ori),<span class="string">'faceAlpha'</span>,0.3)
+hold <span class="string">on</span>
+axisKey = HSVDirectionKey(ori.CS);
+color = axisKey.direction2color(gbfo.misorientation.axis);
+plot(gbfo,<span class="string">'linewidth'</span>,6)
+plot(gbfo,color,<span class="string">'linewidth'</span>,4)
+hold <span class="string">off</span>
+mtexTitle(<span class="string">'misor crystal'</span>)</pre><pre class="codeoutput">Warning: Symmetry missmatch! 
+</pre><img src="TiltAndTwistBoundaries_07.png"> <p>Next we plot the grain with subboundaries colorcoded with the direction mapping according to the misorientation axes in specimen
+            coordinates
+         </p><pre class="codeinput">plot(ebsdS,colorKey.orientation2color(ori),<span class="string">'faceAlpha'</span>,0.3)
+hold <span class="string">on</span>
+axisKey = HSVDirectionKey;
+color = axisKey.direction2color(axS);
+plot(gbfo,<span class="string">'linewidth'</span>,6)
+plot(gbfo,color,<span class="string">'linewidth'</span>,4)
+hold <span class="string">off</span>
+mtexTitle(<span class="string">'misor specimen'</span>)</pre><pre class="codeoutput">Warning: Symmetry missmatch! 
+</pre><img src="TiltAndTwistBoundaries_08.png"> <p style="font-size:1px;"></p>
+         <table class="footer" border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+               <td valign="baseline" align="right"></td>
+            </tr>
+         </table>
+      </div>
+   </body>
+</html>
