@@ -84,3 +84,4 @@
 -I /home/mbexegc2/Downloads/mtex/mtex-5.3/tools/pathes
 -I /home/mbexegc2/Downloads/mtex/mtex-5.3/tools/statistic_tools
 -a /home/mbexegc2/Downloads/mtex/mtex-5.3/data
+-I /usr/local/matlab/R2019a/toolbox/matlab/helptools/
