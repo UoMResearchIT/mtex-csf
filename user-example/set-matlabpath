@@ -83,3 +83,5 @@ MATLABPATH=$MATLABPATH:/home/mbexegc2/Downloads/mtex-5.3/tools/misc_tools
 MATLABPATH=$MATLABPATH:/home/mbexegc2/Downloads/mtex-5.3/tools/option_tools
 MATLABPATH=$MATLABPATH:/home/mbexegc2/Downloads/mtex-5.3/tools/pathes
 MATLABPATH=$MATLABPATH:/home/mbexegc2/Downloads/mtex-5.3/tools/statistic_tools
+
+export MATLABPATH
