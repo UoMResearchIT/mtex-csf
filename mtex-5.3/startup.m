@@ -1,2 +1,1 @@
-which builddocsearchdb
 startup_mtex
