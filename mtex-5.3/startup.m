@@ -1,1 +1,1 @@
-mtex_settings
+startup_mtex
