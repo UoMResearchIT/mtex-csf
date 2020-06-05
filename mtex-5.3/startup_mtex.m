@@ -38,7 +38,7 @@ try
   fid = fopen('VERSION','r');
   MTEXversion = fgetl(fid);
   fclose(fid);
-  fprintf([' ' MTEXversion '  ']);
+  fprintf(' %s  ', MTEXversion);
 catch
   MTEXversion = 'MTEX';
 end
