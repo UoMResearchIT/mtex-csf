@@ -61,12 +61,6 @@ p();
 check_installation;
 p();
 
-% make help searchable
-
-if isempty(dir(fullfile(local_path,'doc','html','helpsearch*')))
-  disp('Creating search data base for MTEX documentation.')
-  builddocsearchdb(fullfile(local_path,'doc','html'));
-end
 
 % finish
 if isempty(lasterr) % everything fine
