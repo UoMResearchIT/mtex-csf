@@ -1,1 +1,1 @@
-setMTEXpref('EulerAngleConvention','Bunge');
+mtex_settings
